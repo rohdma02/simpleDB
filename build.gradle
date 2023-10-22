@@ -1,0 +1,26 @@
+plugins {
+	id 'java'
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+	implementation 'org.apache.commons:commons-lang3:3.13.0'
+	// https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+	// https://mvnrepository.com/artifact/org.junit/junit-bom
+	// testImplementation 'org.junit:junit-bom:5.10.0'
+	testImplementation(enforcedPlatform("org.junit:junit-bom:5.10.0"))
+	// https://mvnrepository.com/artifact/org.junit.platform/junit-platform-suite-engine
+	testImplementation 'org.junit.platform:junit-platform-suite-engine:1.10.0'
+}
+
+test {
+	useJUnitPlatform()
+	testLogging {
+		events "passed", "skipped", "failed"
+	}
+}
