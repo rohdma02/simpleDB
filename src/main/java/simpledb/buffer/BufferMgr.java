@@ -1,7 +1,4 @@
 package simpledb.buffer;
-
-import org.apache.commons.lang3.NotImplementedException;
-
 import simpledb.file.*;
 import simpledb.log.LogMgr;
 
@@ -17,7 +14,7 @@ public class BufferMgr {
     private static final long MAX_TIME = 10000; // 10 seconds
     private String strategy = "naive";
     private int time = 0;
-    private int lastReplacement = 0;  // used by the Clock strategy
+    private int lastReplacement = 0; // used by the Clock strategy
 
     /**
      * Creates a buffer manager having the specified number
@@ -63,6 +60,9 @@ public class BufferMgr {
     public synchronized void unpin(Buffer buff) {
         // TODO: unpin time must be updated
         buff.unpin();
+        time++;
+        buff.setTimeUnpinned(time);
+        lastReplacement = (lastReplacement + 1) % bufferpool.length;
         if (!buff.isPinned()) {
             numAvailable++;
             notifyAll();
@@ -109,7 +109,7 @@ public class BufferMgr {
      * @return the pinned buffer
      */
     private Buffer tryToPin(BlockId blk) {
-        // TODO: pin time and replacement time must be updated
+        // TODO: pin time and replacement buffer must be updated
         Buffer buff = findExistingBuffer(blk);
         if (buff == null) {
             buff = chooseUnpinnedBuffer();
@@ -120,6 +120,9 @@ public class BufferMgr {
         if (!buff.isPinned())
             numAvailable--;
         buff.pin();
+        time++;
+        buff.setTimePinned(time);
+        lastReplacement = (lastReplacement + 1) % bufferpool.length;
         return buff;
     }
 
@@ -184,7 +187,12 @@ public class BufferMgr {
      */
     private Buffer useNaiveStrategy() {
         // TODO: Implement Naive strategy
-        throw new NotImplementedException("Naive strategy not implemented");
+        for (Buffer b : bufferpool) {
+            if (!b.isPinned() || b == null) {
+                return b;
+            }
+        }
+        return null;
     }
 
     /**
@@ -193,8 +201,20 @@ public class BufferMgr {
      * @return chosen buffer
      */
     private Buffer useFIFOStrategy() {
-        // TODO: Implement FIFO strategy
-        throw new NotImplementedException("FIFO strategy not implemented");
+        Buffer chosenBuffer = null;
+
+        for (Buffer b : bufferpool) {
+            if (b == null) {
+                return b;
+            }
+            if (chosenBuffer == null) {
+                chosenBuffer = b;
+            }
+            if (b.getTimePinned() < chosenBuffer.getTimePinned()) {
+                chosenBuffer = b;
+            }
+        }
+        return chosenBuffer;
     }
 
     /**
@@ -203,18 +223,50 @@ public class BufferMgr {
      * @return chosen buffer
      */
     private Buffer useLRUStrategy() {
-        // TODO: Implement LRU strategy
-        throw new NotImplementedException("LRU strategy not implemented");
+        Buffer chosenBuffer = null;
+
+        for (Buffer b : bufferpool) {
+            if (b == null) {
+                return b;
+            }
+            if (chosenBuffer == null) {
+                chosenBuffer = b;
+            }
+            if (!b.isPinned() && b.getTimeUnpinned() < chosenBuffer.getTimeUnpinned()) {
+                chosenBuffer = b;
+            }
+        }
+
+        return chosenBuffer;
+
     }
 
     /**
      * Clock buffer selection strategy
      *
      * @return chosen buffer
+     * Sources used:
+     * https://www.geeksforgeeks.org/java-do-while-loop-with-examples/
      */
     private Buffer useClockStrategy() {
         // TODO: Implement Clock strategy
-        throw new NotImplementedException("Clock strategy not implemented");
+        int startClock = lastReplacement;
+        int currentClock = startClock;
+
+        do {
+            Buffer currentBuffer = bufferpool[currentClock];
+    
+            if (currentBuffer == null || !currentBuffer.isPinned()) {
+                lastReplacement = currentClock;
+                return currentBuffer;
+            }
+    
+            currentBuffer.unpin();
+            currentClock = (currentClock + 1) % bufferpool.length;
+        } while (currentClock != startClock);
+    
+        return null;
+    
     }
 
 }
