@@ -9,22 +9,18 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import simpledb.metadata.MetadataMgr;
+import simpledb.plan.ExtendPlan;
 import simpledb.plan.Plan;
 import simpledb.plan.TablePlan;
-import simpledb.plan.RenamePlan;
 import simpledb.server.SimpleDB;
 import simpledb.tx.Transaction;
 
-/**
- *
- * @author roman
- */
-public class RenameScanUnitTest {
+public class ExtendScanUnitTest {
 
     private SimpleDB db = new SimpleDB("collegedb");
     private MetadataMgr mdm = db.mdMgr();
 
-    public RenameScanUnitTest() {
+    public ExtendScanUnitTest() {
     }
 
     @BeforeAll
@@ -44,17 +40,19 @@ public class RenameScanUnitTest {
     }
 
     @Test
-    public void testRenameScan() {
-        System.out.println("RENAME");
+    public void testExtendScan() {
+        System.out.println("EXTEND");
         Transaction tx = db.newTx();
         Plan studentTblPlan = new TablePlan(tx, "student", mdm);
         tx.commit();
 
-        Plan renamePlan = new RenamePlan(studentTblPlan, "gradyear", "gradDate");
-        Scan renameScan = renamePlan.open();
-        System.out.println(renamePlan.schema().fields());
-        assertEquals(true, renameScan.hasField("gradDate"));
-        assertEquals(false, renameScan.hasField("gradyear"));
-    }
+        Expression gradYearExpr = new Expression("gradYear");
+        Expression senior = new Expression(gradYearExpr.toString() + " <= 2024");
+        Plan extendPlan = new ExtendPlan(studentTblPlan, "Senior", senior);
+        Scan extendScan = extendPlan.open();
+        System.out.println(extendPlan.schema().fields());
 
+        assertEquals(true, extendScan.hasField("Senior"));
+        assertEquals(false, extendScan.hasField("nonexistentField"));
+    }
 }
