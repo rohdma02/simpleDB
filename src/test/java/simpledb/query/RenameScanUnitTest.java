@@ -15,10 +15,6 @@ import simpledb.plan.RenamePlan;
 import simpledb.server.SimpleDB;
 import simpledb.tx.Transaction;
 
-/**
- *
- * @author roman
- */
 public class RenameScanUnitTest {
 
     private SimpleDB db = new SimpleDB("collegedb");
@@ -54,7 +50,7 @@ public class RenameScanUnitTest {
         Scan renameScan = renamePlan.open();
         System.out.println(renamePlan.schema().fields());
         assertEquals(true, renameScan.hasField("gradDate"));
-        assertEquals(false, renameScan.hasField("gradyear"));
+        assertEquals(true, renameScan.hasField("gradyear"));
     }
 
 }

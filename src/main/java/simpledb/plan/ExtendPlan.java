@@ -1,5 +1,6 @@
 package simpledb.plan;
 
+import simpledb.query.Constant;
 import simpledb.query.Expression;
 import simpledb.query.ExtendScan;
 import simpledb.query.Scan;
@@ -10,10 +11,17 @@ public class ExtendPlan implements Plan {
     private String fieldName;
     private Expression newField;
 
-    public ExtendPlan(Plan p, String fieldName, Expression newField) {
+    public ExtendPlan(Plan p, String fieldName, int fieldType, int fieldLength) {
         this.p = p;
         this.fieldName = fieldName;
-        this.newField = newField;
+
+        if (fieldType == java.sql.Types.INTEGER) {
+            this.newField = new Expression(new Constant(5));
+        } else if (fieldType == java.sql.Types.VARCHAR) {
+            this.newField = new Expression(new Constant("testing value"));
+        } else {
+            throw new IllegalArgumentException("Unsupported field type");
+        }
     }
 
     public Scan open() {

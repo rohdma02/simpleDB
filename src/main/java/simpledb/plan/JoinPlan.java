@@ -1,4 +1,3 @@
-// JoinPlan.java
 package simpledb.plan;
 
 import simpledb.query.JoinScan;

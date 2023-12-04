@@ -1,4 +1,3 @@
-// JoinScan.java
 package simpledb.query;
 
 public class JoinScan implements Scan {

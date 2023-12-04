@@ -1,4 +1,3 @@
-// UnionScan.java
 package simpledb.query;
 
 public class UnionScan implements Scan {

@@ -1,18 +1,23 @@
 package simpledb.plan;
 
+import simpledb.query.RenameScan;
+import simpledb.query.Scan;
 import simpledb.record.Schema;
-import simpledb.query.*;
 
 public class RenamePlan implements Plan {
     private Plan p;
     private String currentField;
     private String newField;
-    private Schema schema = new Schema();
+    private Schema schema;
 
     public RenamePlan(Plan p, String currentField, String newField) {
         this.p = p;
         this.currentField = currentField;
         this.newField = newField;
+        this.schema = new Schema();
+        schema.addAll(p.schema());
+        schema.addField(newField, p.schema().type(currentField), p.schema().length(currentField));
+        schema.fields().remove(currentField);
     }
 
     public Scan open() {

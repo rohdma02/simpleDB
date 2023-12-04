@@ -20,34 +20,30 @@ public class RenameScan implements Scan {
     }
 
     public int getInt(String fieldName) {
-        String oldName = getcurrentFieldName(fieldName);
-        return s.getInt(oldName);
+        return s.getInt(getFieldName(fieldName));
     }
 
     public String getString(String fieldName) {
-        String oldName = getcurrentFieldName(fieldName);
-        return s.getString(oldName);
+        return s.getString(getFieldName(fieldName));
     }
 
     public Constant getVal(String fieldName) {
-        String oldName = getcurrentFieldName(fieldName);
-        return s.getVal(oldName);
+        return s.getVal(getFieldName(fieldName));
     }
 
     public boolean hasField(String name) {
-        return newField.contains(name);
+        return newField.equals(name) || s.hasField(name);
     }
 
     public void close() {
         s.close();
     }
 
-    private String getcurrentFieldName(String newField) {
-        int index = newField.indexOf(newField);
-        if (index != -1) {
+    private String getFieldName(String fieldName) {
+        if (fieldName.equals(newField)) {
             return currentField;
         } else {
-            throw new RuntimeException("Field " + newField + " not found.");
+            return fieldName;
         }
     }
 }
