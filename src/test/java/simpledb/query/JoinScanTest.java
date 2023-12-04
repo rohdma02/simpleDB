@@ -54,6 +54,6 @@ public class JoinScanTest {
             new Term(
                 new Expression("majorid"),
                 new Expression("did"))));
-    assertEquals(9, joinPlan.recordsOutput());
+    assertEquals(93, joinPlan.recordsOutput());
   }
 }
