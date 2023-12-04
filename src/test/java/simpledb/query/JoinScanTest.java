@@ -2,6 +2,8 @@ package simpledb.query;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Arrays;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -49,11 +51,12 @@ public class JoinScanTest {
     Plan studentTblPlan = new TablePlan(tx, "student", mdm);
     Plan deptTblPlan = new TablePlan(tx, "dept", mdm);
     tx.commit();
-    Plan joinPlan = new JoinPlan(studentTblPlan, deptTblPlan,
+    Plan plan = new JoinPlan(studentTblPlan, deptTblPlan,
         new Predicate(
             new Term(
                 new Expression("majorid"),
                 new Expression("did"))));
-    assertEquals(93, joinPlan.recordsOutput());
+    assertEquals(Arrays.asList("sid", "sname", "majorid", "gradyear", "did", "dname"), plan.schema().fields());
+    assertEquals(9, plan.recordsOutput());
   }
 }
