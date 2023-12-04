@@ -1,19 +1,20 @@
 package simpledb.query;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static java.sql.Types.INTEGER;
+import static java.sql.Types.VARCHAR;
 
-import java.util.Arrays;
-
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import simpledb.metadata.MetadataMgr;
-import simpledb.plan.JoinPlan;
 import simpledb.plan.Plan;
 import simpledb.plan.TablePlan;
+import simpledb.plan.ExtendPlan;
 import simpledb.server.SimpleDB;
 import simpledb.tx.Transaction;
 
@@ -21,11 +22,11 @@ import simpledb.tx.Transaction;
  *
  * @author roman
  */
-public class JoinScanTest {
+public class ExtendScanTest {
     private SimpleDB db = new SimpleDB("collegedb");
     private MetadataMgr mdm = db.mdMgr();
 
-    public JoinScanTest() {
+    public ExtendScanTest() {
     }
 
     @BeforeAll
@@ -45,18 +46,17 @@ public class JoinScanTest {
     }
 
     @Test
-    public void testJoinScan() {
-        System.out.println("JOIN");
+    public void testExtendScan() {
+        System.out.println("EXTEND");
         Transaction tx = db.newTx();
         Plan studentTblPlan = new TablePlan(tx, "student", mdm);
-        Plan deptTblPlan = new TablePlan(tx, "dept", mdm);
         tx.commit();
-        Plan plan = new JoinPlan(studentTblPlan, deptTblPlan,
-                new Predicate(
-                        new Term(
-                                new Expression("majorid"),
-                                new Expression("did"))));
-        assertEquals(Arrays.asList("sid", "sname", "majorid", "gradyear", "did", "dname"), plan.schema().fields());
-        assertEquals(9, plan.recordsOutput());
+        Plan extendPlan = new ExtendPlan(studentTblPlan, "gradclass", INTEGER, 4);
+        Scan extendScan = extendPlan.open();
+        assertEquals(true, extendScan.hasField("gradclass"));
+        Plan extendPlan2 = new ExtendPlan(studentTblPlan, "initial", VARCHAR, 1);
+        Scan extendScan2 = extendPlan2.open();
+        assertEquals(true, extendScan2.hasField("initial"));
     }
+
 }
