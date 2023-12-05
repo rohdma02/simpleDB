@@ -1,49 +1,56 @@
 package simpledb.query;
 
 public class UnionScan implements Scan {
-    private Scan firstScan;
-    private Scan secondScan;
-    private boolean scanUnion;
+    private Scan[] scans;
+    private int currentScanIndex;
 
     public UnionScan(Scan firstScan, Scan secondScan) {
-        this.firstScan = firstScan;
-        this.secondScan = secondScan;
-        this.scanUnion = true;
+        this.scans = new Scan[] { firstScan, secondScan };
+        this.currentScanIndex = 0;
     }
 
     public void beforeFirst() {
-        firstScan.beforeFirst();
-        secondScan.beforeFirst();
-        scanUnion = true;
+        for (Scan scan : scans) {
+            scan.beforeFirst();
+        }
+        currentScanIndex = 0;
     }
 
     public boolean next() {
-        if (scanUnion && firstScan.next()) {
-            return true;
-        } else {
-            scanUnion = false;
-            return secondScan.next();
+        while (currentScanIndex < scans.length) {
+            if (scans[currentScanIndex].next()) {
+                return true;
+            } else {
+                currentScanIndex++;
+            }
         }
+        return false;
     }
 
     public int getInt(String fldname) {
-        return scanUnion ? firstScan.getInt(fldname) : secondScan.getInt(fldname);
+        return scans[currentScanIndex].getInt(fldname);
     }
 
     public String getString(String fldname) {
-        return scanUnion ? firstScan.getString(fldname) : secondScan.getString(fldname);
+        return scans[currentScanIndex].getString(fldname);
     }
 
     public Constant getVal(String fldname) {
-        return scanUnion ? firstScan.getVal(fldname) : secondScan.getVal(fldname);
+        return scans[currentScanIndex].getVal(fldname);
     }
 
     public boolean hasField(String fldname) {
-        return firstScan.hasField(fldname) || secondScan.hasField(fldname);
+        for (Scan scan : scans) {
+            if (scan.hasField(fldname)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void close() {
-        firstScan.close();
-        secondScan.close();
+        for (Scan scan : scans) {
+            scan.close();
+        }
     }
 }
